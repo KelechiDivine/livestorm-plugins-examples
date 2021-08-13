@@ -3,7 +3,7 @@
 Add custom emoji reactions to your Livestorm Room 🥳.
 This plugin allows users to publish reactions with Emojis.
 
-![reaction example](https://livestorm-ireland-plugin-assets.s3-eu-west-1.amazonaws.com/ad72c8e9-f268-456f-8d52-20bb59005b44/animation.gif)
+![reaction example](https://github.com/livestorm/livestorm-plugins-examples/blob/master/emoji-reactions/animation.gif?raw=true)
 
 [Read the full documentation of Livestorm Plugins](https://github.com/livestorm/livestorm-plugin)
 
@@ -14,7 +14,7 @@ First, the plugin sends a message in the chat to the moderators of the event.
 
 This message includes a custom template and allows to activate the plugin, preview an emoji reaction and dismiss the message.
 
-<img src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/57b4bd36c697917de37ce375/images/6082f714f8c0ef2d98df5a5b/file-9c0l54jk2j.png">
+<img width="450px" src="https://d33v4339jhl8k0.cloudfront.net/docs/assets/57b4bd36c697917de37ce375/images/6082f714f8c0ef2d98df5a5b/file-9c0l54jk2j.png">
 
 Find out more about this API [here](https://developers.livestorm.co/docs/chat).
 
