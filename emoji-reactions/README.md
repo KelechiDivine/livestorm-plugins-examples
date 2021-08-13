@@ -19,39 +19,36 @@ This message includes a custom template and allows to activate the plugin, previ
 
 Find out more about this API [here](https://developers.livestorm.co/docs/chat).
 
-### `PubSub.subscribe()` & `Pubsub.publish()`
+#### `PubSub.subscribe()` & `Pubsub.publish()`
 
 This is probably the most important API within this plugin. 
-
 To display the emoji reaction to everyone in the Room, we use the `PubSub` API in order to subscribe and to publish to an event.
 
 Whenever someone clicks on a reaction, we publish a message which everyone receives, and this triggers the Emoji Reaction.
-
 We also use it to automatically hide the above Chat message whenever a moderator activates the emoji reactions.
 
 Find out more about this API [here](https://developers.livestorm.co/docs/pubsub).
 
-### `Storage.setItem()` & `Storage.getItem()`
+#### `Storage.setItem()` & `Storage.getItem()`
 
 These APIs allows the plugin to know whether the emoji reaction was previously activated on an event. 
-
 That way, we know if we have to automatically display the buttons and the message when we enter the room.
 
 Find out more about this API [here](https://developers.livestorm.co/docs/storage).
 
-### `NotificationCenter.showIframe()`
+#### `NotificationCenter.showIframe()`
 
 This API is used to display the actual CSS animation within an HTML template.
 
 Find out more about this API [here](https://developers.livestorm.co/docs/notificationcenter).
 
-### `Stage.Buttons.registerStageButton()`
+#### `Stage.Buttons.registerStageButton()`
 
 This API is used to display the emoji reaction button on the stage whenever emoji reactions are activated.
 
 Find out more about this API [here](https://developers.livestorm.co/docs/stage).
 
-### `When.eventEnds()`
+#### `When.eventEnds()`
 
 We use this API to display a Chat message right when the events ends, this allow us to get some feedback from the moderators regarding the use of the plugin.
 
