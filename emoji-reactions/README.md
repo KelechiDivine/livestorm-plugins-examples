@@ -3,7 +3,7 @@
 Add custom emoji reactions to your Livestorm Room 🥳.
 This plugin allows users to publish reactions with Emojis.
 
-<img src="https://livestorm-ireland-plugin-assets.s3-eu-west-1.amazonaws.com/ad72c8e9-f268-456f-8d52-20bb59005b44/animation.gif">
+![reaction example](https://livestorm-ireland-plugin-assets.s3-eu-west-1.amazonaws.com/ad72c8e9-f268-456f-8d52-20bb59005b44/animation.gif)
 
 [Read the full documentation of Livestorm Plugins](https://github.com/livestorm/livestorm-plugin)
 
