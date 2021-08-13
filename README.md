@@ -11,3 +11,4 @@ Check out our [getting started Guide](https://developers.livestorm.co/docs/getti
 | Plugin | Demo | Description | APIs used |
 |------|--------|-----------|---------|
 | [Emoji Reaction](https://github.com/livestorm/livestorm-plugins-examples/tree/master/emoji-reactions) | ![demo](https://github.com/livestorm/livestorm-plugins-examples/raw/master/emoji-reactions/animation.gif?raw=true) | React to your events with Emojis ! | Chat.send, PubSub.subscribe, Storage.setItem, NotificationCenter.showIframe, Stage.Buttons, When.eventEnds, Configuration |
+| [Virtual backgrounds](https://github.com/livestorm/livestorm-plugins-examples/tree/master/virtual-backgrounds) | ![demo](https://github.com/livestorm/livestorm-plugins-examples/raw/master/virtual-backgrounds/animation.gif?raw=true) | Apply virtual backgrounds to your webcam | Stream.registerCameraEffect, Stream.registerMultipleCameraEffects, Stream.registerCameraEffectButton, Configuration |

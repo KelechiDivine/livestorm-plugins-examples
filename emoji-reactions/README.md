@@ -56,10 +56,7 @@ Find out more about this API [here](https://developers.livestorm.co/docs/when).
 
 #### `Configuration`
 
-We use the `Configuration` API to get some data such as the session ID for tracking purposes, and also to get the language of the event in order to display 
-
-
-
+We use the `Configuration` API to get some data such as the session ID for tracking purposes, and also to get the language of the event in order to display translated strings.
 
 ## Requirements
 
