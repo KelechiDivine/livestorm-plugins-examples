@@ -1,0 +1,519 @@
+<script type="text/javascript">
+  // Up to Chrome 90, we register for WebAssembly SIMD Chrome Origin Trial which allosw better
+  // performances. This token is valid until 2021/06/08
+  // Reference :
+  // https://googlechrome.github.io/OriginTrials/developer-guide.html
+  const tokenElement = document.createElement('meta');
+  tokenElement.httpEquiv = 'origin-trial';
+
+  if (
+    document.location &&
+    document.location.ancestorOrigins &&
+    document.location.ancestorOrigins.length > 0
+  ) {
+    if (/livestorm.io$/.test(document.location.ancestorOrigins[0])) {
+      console.log('[virtual-background-plugin] Setting origin-trial meta for Staging (remember to remove after Chrome 90 has been released');
+      tokenElement.content = "Ap5tjayzSeBVtvyI49dYesCt87g+wYATOc2GQKU+hFzEEtQhUKm5xVAd2SoUNtb8URQ+iJ3Pqmz1Jti58vQwxwoAAABoeyJvcmlnaW4iOiJodHRwczovL2xpdmVzdG9ybS5pbzo0NDMiLCJmZWF0dXJlIjoiV2ViQXNzZW1ibHlTaW1kIiwiZXhwaXJ5IjoxNjIzODAxNTk5LCJpc1N1YmRvbWFpbiI6dHJ1ZX0=";
+    } else if (/livestorm.co$/.test(document.location.ancestorOrigins[0])) {
+      console.log('[virtual-background-plugin] Setting origin-trial meta for Production (remember to remove after Chrome 90 has been released');
+      tokenElement.content = "AqIj/4dArbGoe7Ofdmpm5WV1CWCrK8uXEWxq2vEnVtbhgL5kzC3AwI6p9z0pzEHjmnCFQ1S+/qJj5veTqBDbwQsAAABZeyJvcmlnaW4iOiJodHRwczovL2FwcC5saXZlc3Rvcm0uY286NDQzIiwiZmVhdHVyZSI6IldlYkFzc2VtYmx5U2ltZCIsImV4cGlyeSI6MTYyMzgwMTU5OX0=";
+    } else {
+      console.log('[virtual-bacground-plugin] Cannot set origin-trial meta, document.location.ancestorOrigins :', document.location.ancestorOrigins);
+    }
+  }
+  document.head.appendChild(tokenElement);
+</script>
+<script src="https://unpkg.com/wasm-feature-detect/dist/umd/index.js"></script>
+<script type="text/javascript" src="https://plugin-assets.ireland.production.livestorm.io/simple-video-background/tflite/tflite.js"></script>
+<script type="text/javascript" src="https://plugin-assets.ireland.production.livestorm.io/simple-video-background/tflite/tflite-simd.js"></script>
+
+<script defer type='text/javascript'>
+  let streamBackgroundEffect;
+ 
+  window.backgroundBlurAmount = parseInt("{{ blur }}");
+  window.backgroundType = "{{ backgroundType }}";
+  window.backgroundImageKey = "{{ imageKey }}";
+  window.backgroundImageUrl = "{{ backgroundImageUrl }}";
+
+  // Hack because the parser does not return an empty value but the template string itself if the process variable is not found
+  if (window.backgroundImageUrl.includes('backgroundImageUrl')) {
+    window.backgroundImageUrl = null;
+  }
+   
+  window.addEventListener('message', (event) => {
+    console.log('[window.addEventListener] got message, event :', event);
+    window.backgroundBlurAmount = event.data.effect.variables.blur;
+    window.backgroundType = event.data.effect.variables.backgroundType;
+    window.backgroundImageKey = event.data.effect.variables.imageKey;
+
+    // Used when upload a custom background
+    if (event.data.effect.variables.backgroundImageUrl) {
+      streamBackgroundEffect.addVirtualImage(event.data.effect.variables.backgroundImageUrl)
+
+      window.backgroundImageUrl = event.data.effect.variables.backgroundImageUrl;
+    } else {
+      window.backgroundImageUrl = null
+    }
+  })
+
+  const baseURL = 'https://plugin-assets.ireland.production.livestorm.io/simple-video-background'
+  const imagesURLDir = baseURL + '/images'
+  const modelsURLDir = baseURL + '/models'
+
+  const images = {
+    openspace: imagesURLDir + '/open_space-1280x720.png',
+    deco: imagesURLDir + '/deco-1280x720.png',
+    chill: imagesURLDir + '/chill-1280x720.png',
+    lounge: imagesURLDir + '/lounge-1280x720.png',
+    turquoise: imagesURLDir + '/ls_turquoise-1280x720.png',
+    red: imagesURLDir + '/ls_red-1280x720.png',
+    orange: imagesURLDir + '/ls_orange-1280x720.png',
+    blue: imagesURLDir + '/ls_blue-1280x720.png',
+    grey: imagesURLDir + '/ls_grey-1280x720.png',
+    green: imagesURLDir + '/ls_green-1280x720.png',
+    darkblue: imagesURLDir + '/ls_dark-blue-1280x720.png',
+  }
+
+  const models = {
+    model96: modelsURLDir + '/segm_lite_v681.tflite',
+    model144: modelsURLDir + '/segm_full_v679.tflite'
+  };
+
+  const segmentationDimensions = {
+    model96: {
+      height: 96,
+      width: 160
+    },
+    model144: {
+      height: 144,
+      width: 256
+    }
+  };
+
+  /**
+   * SET_TIMEOUT constant is used to set interval and it is set in
+   * the id property of the request.data property. timeMs property must
+   * also be set. request.data example:
+   *
+   * {
+   *      id: SET_TIMEOUT,
+   *      timeMs: 33
+   * }
+   */
+  const SET_TIMEOUT = 1;
+
+  /**
+   * CLEAR_TIMEOUT constant is used to clear the interval and it is set in
+   * the id property of the request.data property.
+   *
+   * {
+   *      id: CLEAR_TIMEOUT
+   * }
+   */
+  const CLEAR_TIMEOUT = 2;
+
+  /**
+   * TIMEOUT_TICK constant is used as response and it is set in the id property.
+   *
+   * {
+   *      id: TIMEOUT_TICK
+   * }
+   */
+  const TIMEOUT_TICK = 3;
+
+  /**
+   * The following code is needed as string to create a URL from a Blob.
+   * The URL is then passed to a WebWorker. Reason for this is to enable
+   * use of setInterval that is not throttled when tab is inactive.
+   */
+  const code = `
+    var timer;
+
+    onmessage = function(request) {
+        switch (request.data.id) {
+            case ${SET_TIMEOUT}: {
+                timer = setTimeout(() => {
+                    postMessage({ id: ${TIMEOUT_TICK} });
+                  }, request.data.timeMs);
+                break;
+              }
+            case ${CLEAR_TIMEOUT}: {
+                if (timer) {
+                    clearTimeout(timer);
+                  }
+                break;
+              }
+          }
+      };
+    `;
+
+  const timerWorkerScript = URL.createObjectURL(new Blob([ code ], { type: 'application/javascript' }));
+
+  const createImageElement = src => {
+    const imgElement = document.createElement('img');
+    imgElement.crossOrigin = 'anonymous';
+    imgElement.src = src;
+
+    return imgElement
+  }
+
+
+  /**
+   * Represents a modified MediaStream that adds effects to video background.
+   * <tt>StreamBackgroundEffect</tt> does the processing of the original
+   * video stream.
+   */
+  class StreamBackgroundEffect {
+    _model = {};
+    _options = {};
+    _segmentationPixelCount = 0;
+    _inputVideoElement = {}; // HTMLMediaElement
+    _outputCanvasElement = {}; // HTMLCanvasElement
+    _outputCanvasCtx = {};
+    _segmentationMaskCtx = {};
+    _segmentationMask = {};
+    _segmentationMaskCanvas = {};
+    _virtualImages = {}; // { [id: string]: HTMLImageElement }
+
+    /**
+     * Represents a modified video MediaStream track.
+     *
+     * @class
+     * @param {Object} model - Meet model.
+     * @param {Object} options - Segmentation dimensions.
+     */
+    constructor(model, options) {
+      this._options = options;
+
+      this._virtualImages = Object.keys(images).reduce((obj, key)  => {
+        obj[key] = createImageElement(images[key]);
+
+        return obj
+      }, {});
+
+      if (window.backgroundImageUrl) {
+        this.addVirtualImage(window.backgroundImageUrl)
+      }
+ 
+      this._model = model;
+      this._options = options;
+
+      console.log('[constructor] options :', options);
+
+      this._segmentationPixelCount = this._options.width * this._options.height;
+
+      // Bind event handler so it is only bound once for every instance.
+      this._onMaskFrameTimer = this._onMaskFrameTimer.bind(this);
+
+      // Workaround for FF issue https://bugzilla.mozilla.org/show_bug.cgi?id=1388974
+//      this._outputCanvasElement = document.createElement('canvas');
+//      this._outputCanvasElement.getContext('2d');
+      this._inputVideoElement = document.createElement('video');
+      this._outputCanvasElement = document.querySelector('canvas#canvas');
+      this._outputCanvasElement.width = this._options.virtualBackground.width;
+      this._outputCanvasElement.height = this._options.virtualBackground.height;
+      console.log('[constructor]  this._outputCanvasElement :',  this._outputCanvasElement);
+    }
+
+    /**
+     * EventHandler onmessage for the maskFrameTimerWorker WebWorker.
+     *
+     * @private
+     * @param {EventHandler} response - The onmessage EventHandler parameter.
+     * @returns {void}
+     */
+    _onMaskFrameTimer(response) {
+      if (response.data.id === TIMEOUT_TICK) {
+        this._renderMask();
+      }
+    }
+
+    /**
+     * Represents the run post processing.
+     *
+     * @returns {void}
+     */
+    runPostProcessing() {
+      this._outputCanvasCtx.globalCompositeOperation = 'copy';
+
+      // Draw segmentation mask.
+      //
+
+      // Smooth out the edges.
+      if (window.backgroundType === 'image') {
+        this._outputCanvasCtx.filter = 'blur(4px)';
+      } else {
+        this._outputCanvasCtx.filter = 'blur(8px)';
+      }
+
+      this._outputCanvasCtx.drawImage(
+        this._segmentationMaskCanvas,
+        0,
+        0,
+        this._options.width,
+        this._options.height,
+        0,
+        0,
+        this._outputCanvasElement.width,
+        this._outputCanvasElement.height
+      );
+      this._outputCanvasCtx.globalCompositeOperation = 'source-in';
+      this._outputCanvasCtx.filter = 'none';
+
+      // Draw the foreground video.
+      //
+
+      this._outputCanvasCtx.drawImage(
+        this._inputVideoElement,
+        0,
+        0,
+        this._outputCanvasElement.width,
+        this._outputCanvasElement.height
+      );
+
+      // Draw the background.
+      //
+
+      this._outputCanvasCtx.globalCompositeOperation = 'destination-over';
+
+      if (window.backgroundType === 'image') {
+        this._outputCanvasCtx.drawImage(
+          this.getImageElement(),
+          0,
+          0,
+          this._outputCanvasElement.width,
+          this._outputCanvasElement.height
+        );
+      } else {
+        this._outputCanvasCtx.filter = `blur(${window.backgroundBlurAmount}px)`;
+        //this._outputCanvasCtx.filter = `blur(10px)`;
+        this._outputCanvasCtx.drawImage(
+          this._inputVideoElement,
+          0,
+          0,
+          this._outputCanvasElement.width,
+          this._outputCanvasElement.height
+        );
+      }
+    }
+
+    /**
+     * Get the image to display in the background
+     *
+     * @returns {HTMLImageElement}
+     */
+    getImageElement() {
+      return this._virtualImages[window.backgroundImageUrl || window.backgroundImageKey]
+    }
+
+    /**
+     * Add a virtual image
+     *
+     * @returns {void}
+     */
+     addVirtualImage(src) {
+      this._virtualImages[src] = createImageElement(src)
+    }
+
+    /**
+     * Represents the run Tensorflow Interference.
+     *
+     * @returns {void}
+     */
+    runInference() {
+      this._model._runInference();
+      const outputMemoryOffset = this._model._getOutputMemoryOffset() / 4;
+
+      for (let i = 0; i < this._segmentationPixelCount; i++) {
+        const background = this._model.HEAPF32[outputMemoryOffset + (i * 2)];
+        const person = this._model.HEAPF32[outputMemoryOffset + (i * 2) + 1];
+        const shift = Math.max(background, person);
+        const backgroundExp = Math.exp(background - shift);
+        const personExp = Math.exp(person - shift);
+
+        // Sets only the alpha component of each pixel.
+        this._segmentationMask.data[(i * 4) + 3] = (255 * personExp) / (backgroundExp + personExp);
+      }
+      this._segmentationMaskCtx.putImageData(this._segmentationMask, 0, 0);
+    }
+
+    /**
+     * Loop function to render the background mask.
+     *
+     * @private
+     * @returns {void}
+     */
+    _renderMask() {
+//        console.log('[_renderMask] here');
+      this.resizeSource();
+      this.runInference();
+      this.runPostProcessing();
+
+      this._maskFrameTimerWorker.postMessage({
+        id: SET_TIMEOUT,
+        // timeMs: 1000 / 30
+        timeMs: 30
+      });
+    }
+
+    /**
+     * Represents the resize source process.
+     *
+     * @returns {void}
+     */
+    resizeSource() {
+      this._segmentationMaskCtx.drawImage(
+        this._inputVideoElement,
+        0,
+        0,
+        this._inputVideoElement.width,
+        this._inputVideoElement.height,
+        0,
+        0,
+        this._options.width,
+        this._options.height
+      );
+
+      const imageData = this._segmentationMaskCtx.getImageData(
+        0,
+        0,
+        this._options.width,
+        this._options.height
+      );
+      const inputMemoryOffset = this._model._getInputMemoryOffset() / 4;
+
+      for (let i = 0; i < this._segmentationPixelCount; i++) {
+        this._model.HEAPF32[inputMemoryOffset + (i * 3)] = imageData.data[i * 4] / 255;
+        this._model.HEAPF32[inputMemoryOffset + (i * 3) + 1] = imageData.data[(i * 4) + 1] / 255;
+        this._model.HEAPF32[inputMemoryOffset + (i * 3) + 2] = imageData.data[(i * 4) + 2] / 255;
+      }
+    }
+
+    /**
+     * Checks if the local track supports this effect.
+     *
+     * @param {LocalTrack} localTrack - Track to apply effect.
+     * @returns {boolean} - Returns true if this effect can run on the specified track
+     * false otherwise.
+     */
+    isEnabled(localTrack) {
+      return localTrack.isVideoTrack() && localTrack.videoType === 'camera';
+    }
+
+    /**
+     * Starts loop to capture video frame and render the segmentation mask.
+     *
+     * @param {MediaStream} stream - Stream to be used for processing.
+     * @returns {MediaStream} - The stream with the applied effect.
+     */
+    startEffect(stream) {
+      console.log('[startEffect] Effect started');
+      this._maskFrameTimerWorker = new Worker(timerWorkerScript, { name: 'Blur effect worker' });
+      this._maskFrameTimerWorker.onmessage = this._onMaskFrameTimer;
+      const firstVideoTrack = stream.getVideoTracks()[0];
+      let { height, frameRate, width }
+        = firstVideoTrack.getSettings ? firstVideoTrack.getSettings() : firstVideoTrack.getConstraints();
+
+      console.log('[startEffect] height :', height);
+      console.log('[startEffect] width :', width);
+      console.log('[startEffect] frameRate :', frameRate);
+
+      this._segmentationMask = new ImageData(this._options.width, this._options.height);
+      this._segmentationMaskCanvas = document.createElement('canvas');
+      this._segmentationMaskCanvas.width = this._options.width;
+      this._segmentationMaskCanvas.height = this._options.height;
+      this._segmentationMaskCtx = this._segmentationMaskCanvas.getContext('2d');
+
+      this._outputCanvasCtx = this._outputCanvasElement.getContext('2d');
+      this._inputVideoElement.width = parseInt(width, 10);
+      this._inputVideoElement.height = parseInt(height, 10);
+      this._inputVideoElement.autoplay = true;
+      this._inputVideoElement.srcObject = stream;
+
+      console.log('[startEffect] this._inputVideoElement.srcObject.getAudioTracks() :', this._inputVideoElement.srcObject.getAudioTracks());
+
+      this._inputVideoElement.onloadeddata = () => {
+        console.log('[_inputVideoElement.onloadeddata] done');
+        this._maskFrameTimerWorker.postMessage({
+          id: SET_TIMEOUT,
+//          timeMs: 1000 / 30
+          timeMs: 30
+        });
+      };
+
+      return this._outputCanvasElement.captureStream(parseInt(frameRate, 10));
+    }
+
+    /**
+     * Stops the capture and render loop.
+     *
+     * @returns {void}
+     */
+    stopEffect() {
+      this._maskFrameTimerWorker.postMessage({
+        id: CLEAR_TIMEOUT
+      });
+
+      this._maskFrameTimerWorker.terminate();
+    }
+  }
+
+  async function createVirtualBackgroundEffect(virtualBackground) {
+    if (!MediaStreamTrack.prototype.getSettings && !MediaStreamTrack.prototype.getConstraints) {
+      throw new Error('StreamBackgroundEffect not supported!');
+    }
+    let tflite;
+
+    let simdSupported = await wasmFeatureDetect.simd();
+
+    console.log('[createVirtualBackgroundEffect] simdSupported :', simdSupported);
+
+    if (simdSupported) {
+      tflite = await createTFLiteSIMDModule();
+    } else {
+      tflite = await createTFLiteModule();
+    }
+
+    const modelBufferOffset = tflite._getModelBufferMemoryOffset();
+    const modelResponse = await fetch(simdSupported? models.model144 : models.model96);
+
+    console.log('[createVirtualBackgroundEffect] modelBufferOffset :', modelBufferOffset);
+    console.log('[createVirtualBackgroundEffect] modelResponse :', modelResponse);
+
+    if (!modelResponse.ok) {
+      throw new Error('Failed to download tflite model!');
+    }
+
+
+    const model = await modelResponse.arrayBuffer();
+    tflite.HEAPU8.set(new Uint8Array(model), modelBufferOffset);
+    tflite._loadModel(model.byteLength);
+
+    const options = {
+      // Check SIMD here
+      ...simdSupported ? segmentationDimensions.model144 : segmentationDimensions.model96,
+      virtualBackground
+    };
+
+    console.log('[createVirtualBackgroundEffect] options :', options);
+    return new StreamBackgroundEffect(tflite, options);
+  }
+
+
+  async function setupStream() {
+    console.log('[setupStream] window.video :', window.video);
+
+    const height = window.video.height;
+    const width = window.video.width;
+
+    // No audio here
+    window.video.srcObject.getAudioTracks().forEach(track => { track.stop(); });
+
+    // Store the streamBgEffect instance to be used elsewhere
+    streamBgEffect = await createVirtualBackgroundEffect({ height, width, backgroundType }).then(e => {
+      console.log('[setupStream][createVirtualBackgroundEffect] e :', e);
+      const ostream = e.startEffect(window.video.srcObject);
+    });
+  }
+
+</script>
