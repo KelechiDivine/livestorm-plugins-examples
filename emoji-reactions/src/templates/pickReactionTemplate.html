@@ -1,0 +1,66 @@
+<div class="parent">
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/%2B1.png">
+  </button>
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/heart_eyes.png">
+  </button>
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/joy.png">
+  </button>
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/scream.png">
+  </button>
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/cry.png">
+  </button>
+  <button type="button">
+    <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/tada.png">
+  </button>
+</div>
+<script>
+  document.querySelectorAll('button').forEach(function(element) {
+    element.addEventListener('click', function() {
+      postMessage({ clickedElement: element.querySelector('img').src })
+      element.disabled = true
+      setTimeout(() => element.disabled = false, 1000)
+    })
+  })
+</script>
+<style>
+  * {
+    -moz-user-select: -moz-none;
+   -khtml-user-select: none;
+   -webkit-user-select: none;
+   -ms-user-select: none;
+   user-select: none;
+  }
+  .parent {
+    display: flex;
+    height: 35px;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .parent > button {
+    width: 16.6%;
+    transition: .3s;
+    margin: 0;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    line-height: 0px;
+    transform: scale(1);
+    height: 24px;
+    font-size: 24px;
+    padding: 0;
+    outline: none !important;
+  }
+  img {
+    width: 24px;
+    height: 24px;
+  }
+  .parent > button:hover {
+    transform: scale(1.25);
+  }
+</style>

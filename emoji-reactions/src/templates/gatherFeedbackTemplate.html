@@ -1,0 +1,48 @@
+<script>
+  function react(feedback) {
+    postMessage({ feedback: feedback })
+  }
+</script>
+
+<button onclick="react('good')"class="btn btn-small">
+  <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/%2B1.png">
+</button>
+<button onclick="react('bad')" class="btn btn-small">
+  <img src="https://plugin-assets.ireland.production.livestorm.io/emoji-reactions/-1.png">
+</button>
+<style>
+  body {
+    margin: 0px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 14px;
+  }
+
+  button {
+    margin-right: 8px;
+  }
+
+  img {
+    width: 18px;
+  }
+  
+  .btn {
+    height: 32px;
+    width: 54px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    padding: 6px 15px;
+    background-color: #F4F3F8;
+    color: #333334;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all .15s ease;
+  }
+  .btn:focus {
+    border: none !important;
+    outline: none !important;
+  }
+  .btn:hover {
+    background-color: #efeff4;
+  }
+</style>

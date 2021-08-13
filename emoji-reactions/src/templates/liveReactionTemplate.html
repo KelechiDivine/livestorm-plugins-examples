@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+  @keyframes emojiAnimation {
+    0% {
+      transform: translate(-10px, -15px) scale(0);
+      animation-timing-function: ease-out;
+      opacity: 100%;
+    }
+    10% {
+      transform: translate(-23px, -35px) scale(1.08);
+    }
+    25% {
+      transform: translate(-35px, -60px) scale(1.11);
+    }
+    50% {
+      transform: translate(-50px, -90px) scale(1.13);
+    }
+    75% {
+      transform: translate(-65px, -140px) scale(1.16);
+      opacity: 100%;
+      animation-timing-function: ease-out;
+    }
+    100% {
+      transform: translate(-80px, -170px) scale(1.21);
+      animation-timing-function: ease-out;
+      opacity: 0%;
+    }
+  }
+  
+  span {
+    position: absolute;
+    animation-name: emojiAnimation;
+    animation-duration: 2s;
+    animation-timing-function: linear;
+    transform: scale(0) translate(-10px, -15px);
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    display: inline-block;
+    transition: linear;
+    font-size: 30px;
+  }
+  
+  body {
+    height: 200px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: flex-end;
+  }
+  </style>
+</head>
+<body>
+  <script type="text/javascript">
+    const reaction = "{{ reaction }}"
+    const emojisCount = parseInt("{{ emojisCount }}")
+    let previousDelay = 0
+    const img = document.createElement('img')
+    img.src = reaction
+    img.width = 30
+
+    
+    for (let i=1; i <= emojisCount; i++) {
+      const node = document.createElement('span')
+      const imgToSend = img.cloneNode(true)
+      imgToSend.onload = function () {
+        node.appendChild(imgToSend)
+  
+        const randomFactorPosition = Math.floor(Math.random() * 60) + 1  
+        const randomFactorDelay = previousDelay === 0 ? 1 : Math.floor(Math.random() * 1000) + 50 
+  
+        node.style = `left: ${200 - (randomFactorPosition)}px`
+        setTimeout(() => document.body.appendChild(node), previousDelay = randomFactorDelay + previousDelay)
+      }
+    }
+  
+  </script>
+</body>
+</html>
