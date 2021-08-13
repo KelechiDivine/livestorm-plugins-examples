@@ -8,6 +8,6 @@ Feel free to inspire from these plugins and fork them as you want.
 
 Check out our [getting started Guide](https://developers.livestorm.co/docs/getting-started-with-plugins-sdk/) and our [offical video course](https://fast.wistia.net/embed/channel/azooxwj070).
 
-| Plugin | Description | APIs used |
-|------|-----------|---------|
-| Emoji Reaction | React to your events with Emojis ! | Chat.send, PubSub.subscribe, Storage.setItem, NotificationCenter.showIframe, Stage.Buttons, When.eventEnds, Configuration |
+| Plugin | Demo | Description | APIs used |
+|------|--------|-----------|---------|
+| [Emoji Reaction](https://github.com/livestorm/livestorm-plugins-examples/tree/master/emoji-reactions) | ![demo](https://github.com/livestorm/livestorm-plugins-examples/raw/master/emoji-reactions/animation.gif?raw=true) | React to your events with Emojis ! | Chat.send, PubSub.subscribe, Storage.setItem, NotificationCenter.showIframe, Stage.Buttons, When.eventEnds, Configuration |
