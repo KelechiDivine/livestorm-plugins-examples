@@ -12,10 +12,10 @@ const webHookURL = 'https://hooks.slack.com/services/XXXXXXXX'
 const introText = 'Hello there ! 👋 The event is finished but we\'re still here to help ! Post a message in the chat and our team will read it instantly'
 ```
 
-Please note that at the time of writing (August 16th 2021) we have still not released any `Settings` API that would remove the need for having hardcoded variable,instead developers will be able to create settings panel that will allow users to configure plugins from their event settings.
+Please note that at the time of writing (August 16th 2021) we have still not released any `Settings` API that would remove the need for having hardcoded variables, instead developers will be able to create settings panel that will allow users to configure plugins from their event settings.
 
 
-![reaction example](https://github.com/livestorm/livestorm-plugins-examples/blob/master/slack-chat/animation.gif?raw=true)
+![slack-chat demo](https://github.com/livestorm/livestorm-plugins-examples/blob/master/slack-chat/animation.gif?raw=true)
 
 [Read the full documentation of Livestorm Plugins](https://github.com/livestorm/livestorm-plugin)
 
