@@ -36,7 +36,7 @@ We use this API to register a button in the (+) menu of the Chat, allowing the u
 
 Find out more about this API [here](https://developers.livestorm.co/docs/chat#buttonsregisterchatsharebutton).
 
-#### `Users.me()`
+### `Users.me()`
 
 We use the `Users` API to retrieve the information associated with the current user. This is used to subscribe to messages published to the ID of the connected user.
 
