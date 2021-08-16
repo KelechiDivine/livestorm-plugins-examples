@@ -34,6 +34,8 @@ Find out more about this API [here](https://developers.livestorm.co/docs/pubsub)
 
 We use this API to register a button in the (+) menu of the Chat, allowing the user to prefill the `<textarea>` with the correct command.
 
+Please note that autofilling the Chat `<textarea>` will throw an error on unverified plugins. To prevent this, run `livestorm review` to get the authorization of using the [`Same origin` flag](https://developers.livestorm.co/docs/review-marketplace#the-same-origin-policy).
+
 Find out more about this API [here](https://developers.livestorm.co/docs/chat#buttonsregisterchatsharebutton).
 
 ### `Users.me()`
