@@ -2,31 +2,31 @@ import { Chat, Streams, Users } from '@livestorm/plugin'
 const template = require('./iframe.html').default
 
 export default async function() {
-  const connected_user = await Users.me();
+  const connectedUser = await Users.me();
 
-  function sendChatError(text){
+  function sendChatError(text) {
     Chat.send({
       user: {
         firstName: 'Livestorm',
         lastName: 'Bot',
         tag: 'Sent privately to you'
       },
-      text: `${text}`
+      text
     });
   }
 
-  function createEmbedStream(url){
-    var template_options = {
-      title : 'Embed Stream',
+  function createEmbedStream(url) {
+    var templateOptions = {
+      title: 'Embed Stream',
       imageUrl: '',
-      template: template,
-      variables: { url: url },
+      template,
+      variables: { url },
       onMessage: (message) => {}
     };
-    Streams.addStream(template_options);
+    Streams.addStream(templateOptions);
   }
 
-  function validateUrl(url){
+  function validateUrl(url) {
     try { 
       url = new URL(url); 
       return true;
@@ -41,7 +41,7 @@ export default async function() {
       return;
     }
     // Allow only team members and guest speakers to embed
-    if (connected_user.is_team_member || connected_user.is_guest_speaker){
+    if (connectedUser.is_team_member || connectedUser.is_guest_speaker){
       createEmbedStream(url);
     }
     else{
