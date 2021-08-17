@@ -72,6 +72,8 @@ function nameAsPseudo(user) {
     user.first_name,
     user.last_name
   ].join('')
+  .replace(' ', '')
+  .replace('-', '')
   .normalize("NFD")
   .replace(/[\u0300-\u036f]/g, "")
 }
