@@ -1,9 +1,9 @@
-# Livestorm plugin Embed Site via Chat
+# Embed Site via Chat
 
 Easily embed webpages using a chat command.
 Streamline your embed process by simply embedding sites using '/embed {url}' in the chat bar.
 
-![message example](https://github.com/livestorm/livestorm-plugins-examples/blob/master/direct-messaging/animation.gif?raw=true)
+![message example](https://github.com/livestorm/livestorm-plugins-examples/blob/master/embed-site-via-chat/animation.gif?raw=true)
 
 [Read the full documentation of Livestorm Plugins](https://github.com/livestorm/livestorm-plugin)
 
