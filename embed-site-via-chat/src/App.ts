@@ -8,9 +8,10 @@ export default async function() {
     Chat.send({
       user: {
         firstName: 'Livestorm',
-        lastName: 'Bot'
+        lastName: 'Bot',
+        tag: 'Sent privately to you'
       },
-      text: text
+      text: `${text}`
     });
   }
 
