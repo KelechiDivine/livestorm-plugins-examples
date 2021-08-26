@@ -18,7 +18,7 @@ Find out more about this API [here](https://developers.livestorm.co/docs/theme#s
 ### `Storage`
 
 We use `Storage.setItem()` to persist the color of the background that the user entered in the settings of the plugins.
-Then we use the `Storage.getItem()` method to retrieve the color back when users entered the room, that way we can set the proper background color.
+Then we use the `Storage.getItem()` method to retrieve the color back when users enter the room, that way we can set the proper background color.
 
 Find out more about this API [here](https://developers.livestorm.co/docs/storage).
 
