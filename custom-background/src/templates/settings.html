@@ -1,0 +1,16 @@
+<body style="height: 300px;">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/livestorm/livestorm-plugin/dist/assets/css/style.css" />
+
+    <form class="ls-form">
+        <div>
+        <label class="ls-label">Enter the HUE</label>
+        <input class="ls-input" type="number" min="0" max="255">
+    </div>
+    </form>
+
+    <script>
+        document.querySelector('.ls-input').addEventListener('change', (event) => {
+            postMessage({ hue: Number(event.target.value) })
+        })
+    </script>
+</body>
